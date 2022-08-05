@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { MovieService } from "@services/movie/movie.service";
 import { MovieController } from "./movies.controller"
 import { createRequest, createResponse } from "node-mocks-http";
+import { ApiRequest } from '@schemas/ApiRequest';
 
 describe('Movies Controller', ()=>{
     let movieController: MovieController;
@@ -15,9 +16,10 @@ describe('Movies Controller', ()=>{
     })
 
     test('Get movies', ()=>{
-        const request = createRequest({
+        const request: ApiRequest = createRequest({
             method: 'GET',
-            url: '/movies'
+            url: '/movies',
+            user: {}
         });
         const response = createResponse();
         const result = movieController.getMovies(request, response, ()=>{});

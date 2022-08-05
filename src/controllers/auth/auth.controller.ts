@@ -19,8 +19,8 @@ export class AuthController implements interfaces.Controller {
             password: Joi.string().required()
         })
     ))
-    public login(@request() req: express.Request, @response() res: express.Response, @next() nextf: express.NextFunction): any {
-        const token = this.authService.login(req.body.username,req.body.password);
+    public async login(@request() req: express.Request, @response() res: express.Response, @next() nextf: express.NextFunction): Promise<any> {
+        const token = await this.authService.login(req.body.username,req.body.password);
         return {
             data: {
                 access_token: token

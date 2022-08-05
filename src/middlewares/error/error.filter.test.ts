@@ -6,6 +6,7 @@ import { RequestSchemaError } from "@errors/requestScheme.error"
 import { LoggerService } from "@services/logger/logger.service";
 import { createRequest, createResponse } from "node-mocks-http";
 import { errorFilter } from "./error.filter";
+import { ForbiddenError } from '@errors/forbidden.error';
 
 describe('Error filter tests', ()=>{
 
@@ -40,6 +41,18 @@ describe('Error filter tests', ()=>{
         const result = errorFilter(loggerService)(error, request, response, ()=>{});
         expect(result?.statusCode).toEqual(500);
         expect(error.getResponse().error).toEqual(ApiErrors.INTERNAL_SERVER_ERROR);
+    })
+
+    test('ForbiddenError', ()=>{
+        const error = new ForbiddenError('Error');
+        const request = createRequest({
+            method: 'POST',
+            url: '/auth/login'
+        });
+        const response = createResponse();
+        const result = errorFilter(loggerService)(error, request, response, ()=>{});
+        expect(result?.statusCode).toEqual(403);
+        expect(error.getResponse().error).toEqual(ApiErrors.FORBIDDEN);
     })
 
 })

@@ -3,6 +3,8 @@ import { interfaces, controller, httpGet, request, response, next } from "invers
 import { inject } from "inversify";
 import { TYPE } from "@config/ioc/types";
 import { MovieService } from "@services/movie/movie.service";
+import { ROLES } from "@enums/roles.enum";
+import { ApiRequest } from "@schemas/ApiRequest";
 
 @controller("/movies")
 export class MovieController implements interfaces.Controller {
@@ -11,8 +13,8 @@ export class MovieController implements interfaces.Controller {
         @inject(TYPE.MovieService) private movieService: MovieService
     ) {}
 
-    @httpGet("/")
-    public getMovies(@request() req: express.Request, @response() res: express.Response, @next() nextf: express.NextFunction): any {
+    @httpGet("/", TYPE.JwtMiddleware)
+    public getMovies(@request() req: ApiRequest, @response() res: express.Response, @next() nextf: express.NextFunction): any {
         const result: any = this.movieService.getMovies();
         return result;
     }
