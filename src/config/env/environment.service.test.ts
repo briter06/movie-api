@@ -17,7 +17,8 @@ describe('Environment variables', ()=>{
             ...process.env,
             PORT: "3000",
             ROOT_PATH: "/api",
-            JWT_SECRET: "123456"
+            JWT_SECRET: "123456",
+            LOGGER_LEVEL: 'OFF'
         }
         const validEnvironment = environService.loadEnvironment();
         expect(validEnvironment.valid).toBe(true);

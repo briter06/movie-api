@@ -14,7 +14,8 @@ describe('Movies Controller', ()=>{
         environService.getVariables = jest.fn(()=>({
             port: '3000',
             jwtSecret: '123456',
-            rootPath: '/api'
+            rootPath: '/api',
+            loggerlevel: 'OFF',
         }))
         authService = new AuthService(environService);
         authController = new AuthController(authService);

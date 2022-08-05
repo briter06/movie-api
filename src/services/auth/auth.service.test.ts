@@ -11,6 +11,7 @@ describe("AuthService tests", () => {
         environService = new EnvironmentService();
         environService.getVariables = jest.fn(()=>({
             port: '3000',
+            loggerlevel: 'OFF',
             jwtSecret: '123456',
             rootPath: '/api'
         }))

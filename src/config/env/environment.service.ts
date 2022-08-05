@@ -11,6 +11,7 @@ export class EnvironmentService{
         }
         this.variables = {
             jwtSecret: validationResult.value.JWT_SECRET,
+            loggerlevel: validationResult.value.LOGGER_LEVEL,
             port: validationResult.value.PORT,
             rootPath: validationResult.value.ROOT_PATH
         };
