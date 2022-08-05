@@ -7,6 +7,7 @@ import { InversifyExpressServer } from 'inversify-express-utils';
 import { container } from "@config/ioc/inversify.config";
 import { EnvironmentService } from "@config/env/environment.service";
 import { TYPE } from "@config/ioc/types";
+import { errorFilter } from "@middlewares/error/error.filter";
 
 const environmentService: EnvironmentService = new EnvironmentService();
 const loadedEnvironment = environmentService.loadEnvironment();
@@ -16,13 +17,19 @@ if (!loadedEnvironment.valid){
 container.bind<EnvironmentService>(TYPE.EnvironmentService).toConstantValue(environmentService);
 
 // create server
-const server = new InversifyExpressServer(container);
+const server = new InversifyExpressServer(container, null, {
+  rootPath: environmentService.getVariables().rootPath
+});
 server.setConfig((app) => {
   // add body parser
   app.use(bodyParser.urlencoded({
     extended: true
   }));
   app.use(bodyParser.json());
+});
+
+server.setErrorConfig((app) => {
+  app.use(errorFilter);
 });
 
 const serverApp = server.build();

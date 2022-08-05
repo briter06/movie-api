@@ -10,7 +10,9 @@ export class EnvironmentService{
             return {valid: false, error: validationResult.error.message}
         }
         this.variables = {
-            port: validationResult.value.PORT
+            jwtSecret: validationResult.value.JWT_SECRET,
+            port: validationResult.value.PORT,
+            rootPath: validationResult.value.ROOT_PATH
         };
         return {valid: true}
     }

@@ -15,7 +15,9 @@ describe('Environment variables', ()=>{
     test('Valid environment variables', ()=>{
         process.env = {
             ...process.env,
-            PORT: "3000"
+            PORT: "3000",
+            ROOT_PATH: "/api",
+            JWT_SECRET: "123456"
         }
         const validEnvironment = environService.loadEnvironment();
         expect(validEnvironment.valid).toBe(true);

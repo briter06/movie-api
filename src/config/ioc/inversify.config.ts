@@ -6,10 +6,12 @@ const container = new Container();
 
 // import controllers
 import "@controllers/movies/movies.controller";
+import "@controllers/auth/auth.controller";
 
 // import services
-import "@services/movie/movie.service"
+import "@services/auth/auth.service";
+import "@services/movie/movie.service";
 
-container.load(buildProviderModule())
+container.load(buildProviderModule());
 
-export { container, provide }
+export { container, provide };

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { MovieService } from "./movie.service";
 
-describe("Calculator tests", () => {
+describe("MovieService tests", () => {
 
     let movieService: MovieService;
 

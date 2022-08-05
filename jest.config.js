@@ -11,6 +11,7 @@ module.exports = {
     "^@controllers(.*)$": "<rootDir>/src/controllers$1",
     "^@middlewares(.*)$": "<rootDir>/src/middlewares$1",
     "^@schemas(.*)$": "<rootDir>/src/schemas$1",
-    "^@enums(.*)$": "<rootDir>/src/enums$1"
+    "^@enums(.*)$": "<rootDir>/src/enums$1",
+    "^@errors(.*)$": "<rootDir>/src/errors$1"
   }
 };
