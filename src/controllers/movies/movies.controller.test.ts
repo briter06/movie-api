@@ -25,7 +25,7 @@ describe('Movies Controller', ()=>{
         });
         const response = createResponse();
         const result = await movieController.getMovies(request, response, ()=>{});
-        expect(result).toEqual({data: true});
+        expect(result).toEqual({data:[]});
     })
 
 })

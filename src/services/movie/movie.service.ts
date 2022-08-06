@@ -11,8 +11,8 @@ export class MovieService{
         @inject(TYPE.PersistanceService) private persistanceService: PersistanceService
     ){}
 
-    public async getMovies(): Promise<Movie[]> {
-        const movies = this.persistanceService.getMovies();
+    public async getMovies(ownerId?: string): Promise<Movie[]> {
+        const movies = this.persistanceService.getMovies(ownerId);
         return movies
     }
 

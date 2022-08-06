@@ -1,6 +1,6 @@
 import Joi from "joi"
 import { createRequest, createResponse } from "node-mocks-http";
-import { joiValidator } from "./joi.middleware";
+import { joiBodyValidator } from "./joi.middleware";
 
 describe('Joi Validator Tests', ()=>{
 
@@ -18,7 +18,7 @@ describe('Joi Validator Tests', ()=>{
         const response = createResponse();
 
         try{
-            const result = joiValidator(schema);
+            const result = joiBodyValidator(schema);
             result(request,response,()=>{
                 expect(true).toBeDefined();
             });
@@ -39,7 +39,7 @@ describe('Joi Validator Tests', ()=>{
         const response = createResponse();
 
         try{
-            const result = joiValidator(schema);
+            const result = joiBodyValidator(schema);
             result(request,response,()=>{
                 expect(true).toBeUndefined();
             });

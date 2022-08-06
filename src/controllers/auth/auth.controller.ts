@@ -3,8 +3,8 @@ import { interfaces, controller, request, response, next, httpPost } from "inver
 import { inject } from "inversify";
 import { TYPE } from "@config/ioc/types";
 import { AuthService } from "@services/auth/auth.service";
-import { joiValidator } from "@middlewares/joi/joi.middleware";
 import Joi from "joi";
+import { joiBodyValidator } from "@middlewares/joi/joi.middleware";
 
 @controller("/auth")
 export class AuthController implements interfaces.Controller {
@@ -13,7 +13,7 @@ export class AuthController implements interfaces.Controller {
         @inject(TYPE.AuthService) private authService: AuthService
     ) {}
 
-    @httpPost("/login", joiValidator(
+    @httpPost("/login", joiBodyValidator(
         Joi.object().keys({
             username: Joi.string().required(),
             password: Joi.string().required()

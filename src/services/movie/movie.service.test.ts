@@ -13,6 +13,6 @@ describe("MovieService tests", () => {
 
     test('Basic data test', async () => {
         const movies = await services.movieService.getMovies();
-        expect(movies).toEqual({data: true});
+        expect(movies).toEqual([]);
     })
 })
