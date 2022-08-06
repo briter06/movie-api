@@ -1,6 +1,7 @@
 import { EnvironmentService } from "@config/env/environment.service";
 import { provide } from "@config/ioc/inversify.config";
 import { TYPE } from "@config/ioc/types";
+import { UserExistsError } from "@errors/userExists.error";
 import { User } from "@models/User";
 import { Params } from "@schemas/Params";
 import { PersistanceService } from "@services/persistance/persistance.service";
@@ -20,6 +21,16 @@ export class AuthService{
         const user = await this.persistanceService.getUser(username, password);
         const token = this.createToken(user.username,params.jwtExpirationTime);
         return token;
+    }
+
+    public async signup(user:User){
+        const exists = await this.persistanceService.userExists(user.username);
+        if(!exists){
+            const result = await this.persistanceService.createUser(user);
+            return result
+        }else{
+            throw new UserExistsError('Username already exists');
+        }
     }
 
     private createToken(userId: string, expiresIn?: string){

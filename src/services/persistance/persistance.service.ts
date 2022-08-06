@@ -5,12 +5,13 @@ import { User } from "@models/User";
 import { Params } from "@schemas/Params";
 import { inject } from "inversify";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, ScanCommand, ScanCommandInput } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, ScanCommandInput } from "@aws-sdk/lib-dynamodb";
 import { UserNoExistsError } from "@errors/userNoExists.error";
 import { IncorrectLoginError } from "@errors/incorrectLogin.error";
 import { InternalServerError } from "@errors/internalServer.error";
 import { EnvironmentVariables } from "@config/env/environmentVariables";
 import { Movie } from "@models/Movie";
+import { STATUS } from "@enums/status.enum";
 
 @provide(TYPE.PersistanceService)
 export class PersistanceService{
@@ -26,16 +27,12 @@ export class PersistanceService{
     public initAWSDynamoDB(){
         const variables: EnvironmentVariables = this.environService.getVariables();
         const marshallOptions = {
-            // Whether to automatically convert empty strings, blobs, and sets to `null`.
-            convertEmptyValues: false, // false, by default.
-            // Whether to remove undefined values while marshalling.
-            removeUndefinedValues: true, // false, by default.
-            // Whether to convert typeof object to map attribute.
-            convertClassInstanceToMap: true, // false, by default.
+            convertEmptyValues: false,
+            removeUndefinedValues: true,
+            convertClassInstanceToMap: true,
         };
         const unmarshallOptions = {
-            // Whether to return numbers as a string instead of converting them to native JavaScript numbers.
-            wrapNumbers: false, // false, by default.
+            wrapNumbers: false,
         };
         const translateConfig = { marshallOptions, unmarshallOptions };
         const ddbClient = new DynamoDBClient({
@@ -47,6 +44,22 @@ export class PersistanceService{
         });
         this.dynamo = DynamoDBDocumentClient.from(ddbClient,translateConfig);
         this.table = variables.awsDynamoTableName;
+    }
+
+    public async createUser(user: User): Promise<{status: STATUS}>{
+        const params = {
+            TableName: this.table,
+            Item:{
+                PK: `USER#${user.username}`,
+                SK: `USER#${user.username}`,
+                password: user.password,
+                name: user.name
+            }
+        };
+        await this.dynamo.send(new PutCommand(params));
+        return {
+            status: STATUS.SUCCESS
+        }
     }
 
     public async getUser(username: string, password?: string): Promise<User> {
@@ -71,6 +84,21 @@ export class PersistanceService{
             }
         }
         throw new UserNoExistsError('User does not exist');
+    }
+
+    public async userExists(username: string){
+        const params = {
+            TableName: this.table,
+            Key: {
+                PK: `USER#${username}`,
+                SK: `USER#${username}`,
+            }
+        };
+        const data = await this.dynamo.send(new GetCommand(params));
+        if(data.Item){
+            return true;
+        }
+        return false;
     }
 
     public async getParams(): Promise<Params>{

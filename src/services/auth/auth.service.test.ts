@@ -1,9 +1,7 @@
 import 'reflect-metadata';
-import { EnvironmentService } from '@config/env/environment.service';
-import { PersistanceService } from '@services/persistance/persistance.service';
-import { AuthService } from './auth.service';
 import { JsonWebTokenError } from 'jsonwebtoken';
 import { getSampleServices, SampleServices, SAMPLE_ENVIRONMENT } from '@utils/environment.sample';
+import { STATUS } from '@enums/status.enum';
 
 describe("AuthService tests", () => {
 
@@ -21,6 +19,16 @@ describe("AuthService tests", () => {
         const result = await services.authService.login("user", "password");
         expect(result).toBeDefined();
         expect(typeof result).toEqual("string");
+    })
+
+    test('Signup', async ()=>{
+        const result = await services.authService.signup({
+            username: 'username',
+            password: 'pass',
+            name: 'name'
+        });
+        expect(result).toBeDefined();
+        expect(result).toEqual({status:STATUS.SUCCESS});
     })
 
     test('Test correct jwt token', async ()=>{
