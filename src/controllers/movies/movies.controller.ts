@@ -5,6 +5,7 @@ import { TYPE } from "@config/ioc/types";
 import { MovieService } from "@services/movie/movie.service";
 import { ROLES } from "@enums/roles.enum";
 import { ApiRequest } from "@schemas/ApiRequest";
+import { Movie } from "@models/Movie";
 
 @controller("/movies")
 export class MovieController implements interfaces.Controller {
@@ -14,8 +15,10 @@ export class MovieController implements interfaces.Controller {
     ) {}
 
     @httpGet("/", TYPE.JwtMiddleware)
-    public getMovies(@request() req: ApiRequest, @response() res: express.Response, @next() nextf: express.NextFunction): any {
-        const result: any = this.movieService.getMovies();
-        return result;
+    public async getMovies(@request() req: ApiRequest, @response() res: express.Response, @next() nextf: express.NextFunction): Promise<any> {
+        const result: Movie[] = await this.movieService.getMovies();
+        return {
+            data: result
+        };
     }
 }

@@ -17,7 +17,8 @@ export class AuthService{
 
     public async login(username: string, password: string): Promise<any> {
         const params: Params = await this.persistanceService.getParams();
-        const token = this.createToken(username,params.jwtExpirationTime);
+        const user = await this.persistanceService.getUser(username, password);
+        const token = this.createToken(user.username,params.jwtExpirationTime);
         return token;
     }
 

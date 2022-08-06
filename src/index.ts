@@ -9,6 +9,7 @@ import { EnvironmentService } from "@config/env/environment.service";
 import { TYPE } from "@config/ioc/types";
 import { errorFilter } from "@middlewares/error/error.filter";
 import { LoggerService } from "@services/logger/logger.service";
+import { PersistanceService } from "@services/persistance/persistance.service";
 
 
 // Initialize environment
@@ -21,9 +22,15 @@ if (!loadedEnvironment.valid){
 // Initialize logger
 const loggerService: LoggerService = new LoggerService(environmentService);
 
+// Initialize Persistance Service
+const persistanceService: PersistanceService = new PersistanceService(environmentService);
+persistanceService.initAWSDynamoDB();
+loggerService.info('AWS DynamoDB database started');
+
 // Bind services
 container.bind<EnvironmentService>(TYPE.EnvironmentService).toConstantValue(environmentService);
 container.bind<LoggerService>(TYPE.LoggerService).toConstantValue(loggerService);
+container.bind<PersistanceService>(TYPE.PersistanceService).toConstantValue(persistanceService);
 
 // create server
 const server = new InversifyExpressServer(container, null, {

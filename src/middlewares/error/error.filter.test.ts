@@ -7,16 +7,12 @@ import { LoggerService } from "@services/logger/logger.service";
 import { createRequest, createResponse } from "node-mocks-http";
 import { errorFilter } from "./error.filter";
 import { ForbiddenError } from '@errors/forbidden.error';
+import { SAMPLE_ENVIRONMENT } from '@utils/environment.sample';
 
 describe('Error filter tests', ()=>{
 
     const environService: EnvironmentService = new EnvironmentService();
-    environService.getVariables = jest.fn(()=>({
-        port: '3000',
-        loggerlevel: 'OFF',
-        jwtSecret: '123456',
-        rootPath: '/api'
-    }))
+    environService.getVariables = jest.fn(()=>SAMPLE_ENVIRONMENT);
     const loggerService: LoggerService = new LoggerService(environService);
 
     test('RequestSchemeError', ()=>{

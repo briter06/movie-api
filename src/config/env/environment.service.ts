@@ -10,6 +10,10 @@ export class EnvironmentService{
             return {valid: false, error: validationResult.error.message}
         }
         this.variables = {
+            awsAccessKey: validationResult.value.AWS_ACCESS_KEY,
+            awsDefaultRegion: validationResult.value.AWS_DEFAULT_REGION,
+            awsDynamoTableName: validationResult.value.AWS_DYNAMO_TABLE_NAME,
+            awsSecretAccessKey: validationResult.value.AWS_SECRET_ACCESS_KEY,
             jwtSecret: validationResult.value.JWT_SECRET,
             loggerlevel: validationResult.value.LOGGER_LEVEL,
             port: validationResult.value.PORT,

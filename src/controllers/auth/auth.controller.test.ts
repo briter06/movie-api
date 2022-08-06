@@ -1,28 +1,15 @@
 import 'reflect-metadata';
 import { createRequest, createResponse } from "node-mocks-http";
 import { AuthController } from './auth.controller';
-import { AuthService } from '@services/auth/auth.service';
-import { EnvironmentService } from '@config/env/environment.service';
-import { PersistanceService } from '@services/persistance/persistance.service';
+import { getSampleServices, SampleServices, SAMPLE_ENVIRONMENT } from '@utils/environment.sample';
 
 describe('Movies Controller', ()=>{
     let authController: AuthController;
-    let authService: AuthService;
-    let environService: EnvironmentService;
-    let persistanceService: PersistanceService;
+    let services: SampleServices;
 
     beforeEach(()=>{
-        environService = new EnvironmentService();
-        environService.getVariables = jest.fn(()=>({
-            port: '3000',
-            jwtSecret: '123456',
-            rootPath: '/api',
-            loggerlevel: 'OFF',
-        }))
-        persistanceService = new PersistanceService(environService);
-        authService = new AuthService(environService, persistanceService);
-        authController = new AuthController(authService);
-
+        services = getSampleServices();
+        authController = new AuthController(services.authService);
     })
 
     test('Login', async () => {

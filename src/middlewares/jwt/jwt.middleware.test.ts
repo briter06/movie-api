@@ -1,43 +1,26 @@
 import 'reflect-metadata';
-import { EnvironmentService } from "@config/env/environment.service";
-import { AuthService } from "@services/auth/auth.service";
-import { PersistanceService } from "@services/persistance/persistance.service";
 import { createRequest, createResponse } from "node-mocks-http";
 import { JwtMiddleware } from './jwt.middleware';
 import { ApiRequest } from '@schemas/ApiRequest';
 import { ForbiddenError } from '@errors/forbidden.error';
+import { getSampleServices, SampleServices } from '@utils/environment.sample';
 
 describe('Jwt Validator Tests', ()=>{
 
-    let authService: AuthService;
-    let environService: EnvironmentService;
-    let persistanceService: PersistanceService;
     let jwtMiddleware: JwtMiddleware;
-    const params = {
-        jwtExpirationTime: '30m'
-    }
+    let services: SampleServices;
     const user = {
         username: 'user',
         password: 'pass'
     }
 
     beforeEach(()=>{
-        environService = new EnvironmentService();
-        environService.getVariables = jest.fn(()=>({
-            port: '3000',
-            loggerlevel: 'OFF',
-            jwtSecret: '123456',
-            rootPath: '/api'
-        }))
-        persistanceService = new PersistanceService(environService);
-        persistanceService.getParams = jest.fn(async ()=>params);
-        persistanceService.getUser = jest.fn(async ()=>user);
-        authService = new AuthService(environService, persistanceService);
-        jwtMiddleware = new JwtMiddleware(authService);
+        services = getSampleServices();
+        jwtMiddleware = new JwtMiddleware(services.authService);
     });
 
     test('Test correct jwt token', async ()=>{
-        const token = await authService.login(user.username,user.password);
+        const token = await services.authService.login(user.username,user.password);
         try{
             const request: ApiRequest = createRequest({
                 method: 'POST',
@@ -48,7 +31,7 @@ describe('Jwt Validator Tests', ()=>{
             });
             const response = createResponse();
             jwtMiddleware.handler(request,response,jest.fn(()=>{
-                expect(request.user).toEqual(user);
+                expect(request.user.username).toEqual(user.username);
             }));
         }catch(err){
             expect(err).toBeFalsy();
