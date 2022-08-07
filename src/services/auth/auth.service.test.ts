@@ -7,8 +7,8 @@ describe("AuthService tests", () => {
 
     let services: SampleServices;
     const user = {
-        username: 'user',
-        password: 'pass'
+        username: 'username',
+        password: 'password'
     }
 
     beforeEach(()=>{
@@ -22,6 +22,7 @@ describe("AuthService tests", () => {
     })
 
     test('Signup', async ()=>{
+        services.persistanceService.getByKey = jest.fn(async ()=>null);
         const result = await services.authService.signup({
             username: 'username',
             password: 'pass',

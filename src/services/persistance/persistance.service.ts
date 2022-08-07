@@ -1,23 +1,20 @@
 import { EnvironmentService } from "@config/env/environment.service";
 import { provide } from "@config/ioc/inversify.config";
 import { TYPE } from "@config/ioc/types";
-import { User } from "@models/User";
 import { Params } from "@schemas/Params";
 import { inject } from "inversify";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DeleteCommand, DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, ScanCommandInput } from "@aws-sdk/lib-dynamodb";
-import { UserNoExistsError } from "@errors/userNoExists.error";
-import { IncorrectLoginError } from "@errors/incorrectLogin.error";
+import { DeleteCommand, DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, ScanCommandInput, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { InternalServerError } from "@errors/internalServer.error";
 import { EnvironmentVariables } from "@config/env/environmentVariables";
-import { Movie } from "@models/Movie";
 import { STATUS } from "@enums/status.enum";
-import { ItemNoExistsError } from "@errors/itemNoExists.error";
+import { ScanParams } from "@schemas/ScanParams";
+import { ScanOperators } from "@enums/scanOperators.enum";
+import { DynamoKeys } from "@models/DynamoKeys";
 
 @provide(TYPE.PersistanceService)
 export class PersistanceService{
 
-    // private dynamo: AWS.DynamoDB.DocumentClient;
     private dynamo!: DynamoDBDocumentClient;
     private table!: string;
 
@@ -47,59 +44,18 @@ export class PersistanceService{
         this.table = variables.awsDynamoTableName;
     }
 
-    public async createUser(user: User): Promise<{status: STATUS}>{
+    public async createItem(keys: DynamoKeys, data: any){
         const params = {
             TableName: this.table,
             Item:{
-                PK: `USER#${user.username}`,
-                SK: `USER#${user.username}`,
-                password: user.password,
-                name: user.name
+                ...keys,
+                ...data
             }
         };
         await this.dynamo.send(new PutCommand(params));
         return {
             status: STATUS.SUCCESS
         }
-    }
-
-    public async getUser(username: string, password?: string): Promise<User> {
-        const params = {
-            TableName: this.table,
-            Key: {
-                PK: `USER#${username}`,
-                SK: `USER#${username}`,
-            }
-        };
-        const data = await this.dynamo.send(new GetCommand(params));
-        if(data.Item){
-            const userData: User = data.Item as User;
-            if(password){
-                if(password!==userData.password){
-                    throw new IncorrectLoginError('Incorrect login');
-                }
-            }
-            return {
-                username,
-                name: userData.name
-            }
-        }
-        throw new UserNoExistsError('User does not exist');
-    }
-
-    public async userExists(username: string){
-        const params = {
-            TableName: this.table,
-            Key: {
-                PK: `USER#${username}`,
-                SK: `USER#${username}`,
-            }
-        };
-        const data = await this.dynamo.send(new GetCommand(params));
-        if(data.Item){
-            return true;
-        }
-        return false;
     }
 
     public async getParams(): Promise<Params>{
@@ -120,100 +76,113 @@ export class PersistanceService{
         throw new InternalServerError('No parameters detected');
     }
 
-    public async createMovie(owner: User,movie: Movie){
-        if(movie.id){
-            const params = {
-                TableName: this.table,
-                Item:{
-                    PK: `USER#${owner.username}`,
-                    SK: `MOVIE#${movie.id}`,
-                    release_date: movie.release_date,
-                    visibility: movie.visibility,
-                    description: movie.description,
-                    title: movie.title,
-                    actors: movie.actors
-                }
-            };
-            await this.dynamo.send(new PutCommand(params));
-            return {
-                status: STATUS.SUCCESS
-            }
-        }
-        throw new InternalServerError('No id was provided');
-    }
-
-    public async deleteMovie(user:User,movieId: string){
-        const movieExists = await this.movieExists(user, movieId);
-        if(movieExists){
-            const params = {
-                TableName: this.table,
-                Key: {
-                    PK: `USER#${user.username}`,
-                    SK: `MOVIE#${movieId}`,
-                }
-            };
-            await this.dynamo.send(new DeleteCommand(params));
-            return {
-                status: STATUS.SUCCESS
-            }
-        };
-        throw new ItemNoExistsError('Movie id does not exist');
-    }
-
-    public async movieExists(user: User, movieId: string){
+    public async updateItem(keys: DynamoKeys, newData: any){
+        const { updateExpresion, expressionAttributesNames, expressionAttributesValues } = this.getUpdateExpressionFields(newData);
+        const conditionExpression = Object.keys(keys).map((k)=>`attribute_exists(${k})`).join(' and ');
         const params = {
             TableName: this.table,
-            Key: {
-                PK: `USER#${user.username}`,
-                SK: `MOVIE#${movieId}`,
-            }
+            Key: keys,
+            ConditionExpression: conditionExpression,
+            UpdateExpression: updateExpresion,
+            ExpressionAttributeNames: expressionAttributesNames,
+            ExpressionAttributeValues: expressionAttributesValues
+        };
+        await this.dynamo.send(new UpdateCommand(params));
+        return {
+            status: STATUS.SUCCESS
+        }
+    }
+
+    private getUpdateExpressionFields(data: any){
+        const keys = Object.keys(data);
+        const updateExpresion = `set ${keys.map((k)=>`#${k} = :${k}`).join(', ')}`;
+        const { expressionAttributesNames, expressionAttributesValues } = this.getNormalExpressionAttributes(data);
+        return { updateExpresion, expressionAttributesNames, expressionAttributesValues };
+    }
+
+    private getNormalExpressionAttributes(data: any){
+        const keys = Object.keys(data);
+        const expressionAttributesValues: any = {};
+        const expressionAttributesNames: any = {};
+        keys.forEach((k)=>{
+            expressionAttributesNames[`#${k}`] = `${k}`;
+            expressionAttributesValues[`:${k}`] = data[k];
+        });
+        return { expressionAttributesNames, expressionAttributesValues };
+    }
+
+    private getExpressionFieldsToReturn(fieldsToReturn: string[]){
+        const fields = fieldsToReturn.map(f=>`#${f}`).join(', ');
+        const expressionAttributesNames: any = {};
+        fieldsToReturn.forEach((k)=>{
+            expressionAttributesNames[`#${k}`] = `${k}`;
+        });
+        return { fields, expressionAttributesNames };
+    }
+
+    public async deleteItem(keys: DynamoKeys){
+        const conditionExpression = Object.keys(keys).map((k)=>`attribute_exists(${k})`).join(' and ');
+        const params = {
+            TableName: this.table,
+            Key: keys,
+            ConditionExpression: conditionExpression
+        };
+        await this.dynamo.send(new DeleteCommand(params));
+        return {
+            status: STATUS.SUCCESS
+        }
+    }
+
+    public async getByKey(fieldsToReturn: string[],keys: DynamoKeys){
+        const { fields, expressionAttributesNames }  = this.getExpressionFieldsToReturn(fieldsToReturn);
+        const params = {
+            ProjectionExpression: fields,
+            ExpressionAttributeNames: expressionAttributesNames,
+            TableName: this.table,
+            Key: keys
         };
         const data = await this.dynamo.send(new GetCommand(params));
         if(data.Item){
-            return true;
+            return data.Item;
         }
-        return false;
+        return null;
     }
 
-    public async getMovies(ownerId?:string): Promise<Movie[]>{
+    public async scanRecords(fieldsToReturn: string[], scanParams: ScanParams){
+        const { filterExpression, expressionAttributesNames, expressionAttributesValues } = this.getScanExpressionFields(scanParams);
         const params: ScanCommandInput = {
-            ProjectionExpression: "release_date, SK, description, title, visibility, actors",
-            TableName: this.table
+            ProjectionExpression: fieldsToReturn.join(', '),
+            TableName: this.table,
+            FilterExpression: filterExpression,
+            ExpressionAttributeNames: expressionAttributesNames,
+            ExpressionAttributeValues: expressionAttributesValues
         }
-        if(ownerId){
-            params.FilterExpression = "begins_with(#SK,:movieIdentifier) and #PK = :userId"
-            params.ExpressionAttributeValues = {
-                ":movieIdentifier": "MOVIE#",
-                ":userId": `USER#${ownerId}`,
-            }
-            params.ExpressionAttributeNames = {
-                "#SK": "SK",
-                "#PK": "PK"
-            }
-        }else{
-            params.FilterExpression = "begins_with(#SK,:movieIdentifier) and #visibility = :visibility"
-            params.ExpressionAttributeValues = {
-                ":movieIdentifier": "MOVIE#",
-                ":visibility": "public",
-            }
-            params.ExpressionAttributeNames = {
-                "#SK": "SK",
-                "#visibility": "visibility"
-            }
+        const result = await this.dynamo.send(new ScanCommand(params));
+        let arrayResult: any = [];
+        if(result.Items){
+            arrayResult = result.Items;
         }
-        const moviesResult = await this.dynamo.send(new ScanCommand(params));
-        let movies: Movie[] = [];
-        if(moviesResult.Items){
-            movies = moviesResult.Items.map(i=>({
-                id: i.SK.split('#')[1],
-                release_date: i.release_date,
-                visibility: i.visibility,
-                description: i.description,
-                title: i.title,
-                actors: i.actors
-            }));
-        }
-        return movies;
+        return arrayResult;
+    }
+
+    private getScanExpressionFields(scanParams: ScanParams){
+        const keys = Object.keys(scanParams);
+        const filterExpression = keys.map((k)=>{
+            switch(scanParams[k].operator){
+                case ScanOperators.BEGINS_WITH:
+                    return `begins_with(#${k}, :${k})`
+                case ScanOperators.EQUALS:
+                default:
+                    return `#${k} = :${k}`
+            }
+        }).join(' and ');
+        const expressionAttributesValues: any = {};
+        const expressionAttributesNames: any = {};
+        keys.forEach((k)=>{
+            expressionAttributesNames[`#${k}`] = `${k}`;
+            expressionAttributesValues[`:${k}`] = scanParams[k].value;
+        });
+        return { filterExpression, expressionAttributesNames, expressionAttributesValues };
     }
 
 }

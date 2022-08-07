@@ -32,17 +32,16 @@ export const getSampleServices = ():SampleServices => {
     const environService: EnvironmentService = new EnvironmentService();
     environService.getVariables = jest.fn(()=>SAMPLE_ENVIRONMENT);
     const persistanceService: PersistanceService = new PersistanceService(environService);
-    persistanceService.getUser = jest.fn(async (username: string, password?: string)=>({
-        username,
+    persistanceService.getByKey = jest.fn(async ()=>({
+        PK: 'username',
+        password: 'password',
         name: 'name'
     }));
     persistanceService.getParams = jest.fn(async ()=>SAMPLE_PARAMS);
-    persistanceService.getMovies = jest.fn(async ()=>([]));
-    persistanceService.userExists = jest.fn(async ()=>false);
-    persistanceService.createUser = jest.fn(async ()=>({status:STATUS.SUCCESS}));
-    persistanceService.createMovie = jest.fn(async ()=>({status:STATUS.SUCCESS}));
-    persistanceService.deleteMovie = jest.fn(async ()=>({status:STATUS.SUCCESS}));
-    persistanceService.movieExists = jest.fn(async ()=>true);
+    persistanceService.scanRecords = jest.fn(async ()=>([]));
+    persistanceService.createItem = jest.fn(async ()=>({status:STATUS.SUCCESS}));
+    persistanceService.deleteItem = jest.fn(async ()=>({status:STATUS.SUCCESS}));
+    persistanceService.updateItem = jest.fn(async ()=>({status:STATUS.SUCCESS}));
     const authService: AuthService = new AuthService(environService, persistanceService);
     const movieService: MovieService = new MovieService(persistanceService);
 

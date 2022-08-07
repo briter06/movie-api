@@ -10,8 +10,8 @@ describe('Jwt Validator Tests', ()=>{
     let jwtMiddleware: JwtMiddleware;
     let services: SampleServices;
     const user = {
-        username: 'user',
-        password: 'pass'
+        username: 'username',
+        password: 'password'
     }
 
     beforeEach(()=>{

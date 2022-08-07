@@ -27,11 +27,22 @@ describe("MovieService tests", () => {
     })
 
     test('Delete Movie test', async () => {
+        services.persistanceService.scanRecords = jest.fn(async ()=>([{data:true}]));
         const result = await services.movieService.deleteMovie({
             username: 'username',
             password: 'pass',
             name: 'name'
         }, 'movieId')
+        expect(result).toEqual({status:STATUS.SUCCESS});
+    })
+
+    test('Update Movie test', async () => {
+        services.persistanceService.scanRecords = jest.fn(async ()=>([{data:true}]));
+        const result = await services.movieService.updateMovie({
+            username: 'username',
+            password: 'pass',
+            name: 'name'
+        }, 'movieId', {})
         expect(result).toEqual({status:STATUS.SUCCESS});
     })
 })

@@ -55,7 +55,24 @@ describe('Movies Controller', ()=>{
             }
         });
         const response = createResponse();
+        services.persistanceService.scanRecords = jest.fn(async ()=>([{data:true}]));
         const result = await movieController.deleteMovie(request, response, ()=>{});
+        expect(result).toEqual({data:{status: STATUS.SUCCESS}});
+    })
+
+    test('Update movie', async ()=>{
+        const request: ApiRequest = createRequest({
+            method: 'PUT',
+            url: '/movies',
+            user: {},
+            body: {
+                movieId: '1234',
+                data: {}
+            }
+        });
+        const response = createResponse();
+        services.persistanceService.scanRecords = jest.fn(async ()=>([{data:true}]));
+        const result = await movieController.updateMovie(request, response, ()=>{});
         expect(result).toEqual({data:{status: STATUS.SUCCESS}});
     })
 

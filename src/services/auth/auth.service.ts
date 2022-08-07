@@ -1,7 +1,9 @@
 import { EnvironmentService } from "@config/env/environment.service";
 import { provide } from "@config/ioc/inversify.config";
 import { TYPE } from "@config/ioc/types";
+import { IncorrectLoginError } from "@errors/incorrectLogin.error";
 import { UserExistsError } from "@errors/userExists.error";
+import { UserNoExistsError } from "@errors/userNoExists.error";
 import { User } from "@models/User";
 import { Params } from "@schemas/Params";
 import { PersistanceService } from "@services/persistance/persistance.service";
@@ -18,18 +20,38 @@ export class AuthService{
 
     public async login(username: string, password: string): Promise<any> {
         const params: Params = await this.persistanceService.getParams();
-        const user = await this.persistanceService.getUser(username, password);
-        const token = this.createToken(user.username,params.jwtExpirationTime);
-        return token;
+        const record = await this.persistanceService.getByKey(['password'],{
+            PK: `USER#${username}`,
+            SK: `USER#${username}`,
+        });
+        if(record){
+            if(record.password!==password){
+                throw new IncorrectLoginError('Incorrect login');
+            }else{
+                const token = this.createToken(username,params.jwtExpirationTime);
+                return token;
+            }
+        }else{
+            throw new UserNoExistsError('User does not exist');
+        }
     }
 
     public async signup(user:User){
-        const exists = await this.persistanceService.userExists(user.username);
-        if(!exists){
-            const result = await this.persistanceService.createUser(user);
-            return result
-        }else{
+        const userExists = await this.persistanceService.getByKey(['PK','SK'],{
+            PK: `USER#${user.username}`,
+            SK: `USER#${user.username}`
+        });
+        if(userExists){
             throw new UserExistsError('Username already exists');
+        }else{
+            const result = await this.persistanceService.createItem({
+                PK: `USER#${user.username}`,
+                SK: `USER#${user.username}`
+            },{
+                password: user.password,
+                name: user.name
+            });
+            return result
         }
     }
 
@@ -47,7 +69,18 @@ export class AuthService{
     }
 
     public async me(username: string): Promise<User>{
-        return this.persistanceService.getUser(username);
+        const record = await this.persistanceService.getByKey(['PK', 'name'],{
+            PK: `USER#${username}`,
+            SK: `USER#${username}`,
+        });
+        if(record){
+            return {
+                username,
+                name: record.name
+            }
+        }else{
+            throw new UserNoExistsError('User does not exist');
+        }
     }
 
 }

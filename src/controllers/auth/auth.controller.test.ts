@@ -4,7 +4,7 @@ import { AuthController } from './auth.controller';
 import { getSampleServices, SampleServices, SAMPLE_ENVIRONMENT } from '@utils/environment.sample';
 import { STATUS } from '@enums/status.enum';
 
-describe('Movies Controller', ()=>{
+describe('Auth Controller', ()=>{
     let authController: AuthController;
     let services: SampleServices;
 
@@ -16,7 +16,11 @@ describe('Movies Controller', ()=>{
     test('Login', async () => {
         const request = createRequest({
             method: 'POST',
-            url: '/auth/login'
+            url: '/auth/login',
+            body: {
+                username: 'username',
+                password: 'password'
+            }
         });
         const response = createResponse();
         const result = await authController.login(request, response, ()=>{});
@@ -35,6 +39,7 @@ describe('Movies Controller', ()=>{
             }
         });
         const response = createResponse();
+        services.persistanceService.getByKey = jest.fn(async ()=>null);
         const result = await authController.signup(request, response, ()=>{});
         expect(result.data.status).toBeDefined();
         expect(result.data.status).toEqual(STATUS.SUCCESS);

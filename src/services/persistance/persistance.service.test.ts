@@ -11,10 +11,10 @@ describe("Persistance tests", () => {
         services = getSampleServices();
     })
 
-    test('Get User', async ()=>{
+    test('Get By Key', async ()=>{
         const user = 'username'
-        const result = await services.persistanceService.getUser(user)
-        expect(result.username).toEqual(user);
+        const result = await services.persistanceService.getByKey([],{PK:'',SK:''});
+        expect(result?.PK).toEqual(user);
     })
 
     test('Get Params', async ()=>{
@@ -22,57 +22,31 @@ describe("Persistance tests", () => {
         expect(result).toEqual(SAMPLE_PARAMS);
     })
 
-    test('Get Movies', async ()=>{
-        const result = await services.persistanceService.getMovies()
+    test('Scan records', async ()=>{
+        const result = await services.persistanceService.scanRecords([],{})
         expect(result).toEqual([]);
     })
 
-    test('User exists', async ()=>{
-        const user = 'username'
-        const result = await services.persistanceService.userExists(user)
-        expect(result).toEqual(false);
+    test('Create item', async ()=>{
+        const result = await services.persistanceService.createItem({
+            PK: '1234',
+            SK: '1234'
+        },{})
+        expect(result).toEqual({status:STATUS.SUCCESS});
     })
 
-    test('Create user', async ()=>{
-        const result = await services.persistanceService.createUser({
-            username: 'username',
-            password: 'pass',
-            name: 'name'
+    test('Delete Item', async ()=>{
+        const result = await services.persistanceService.deleteItem({
+            PK: '1234',
+            SK: '1234'
         })
         expect(result).toEqual({status:STATUS.SUCCESS});
     })
 
-    test('Create Movie', async ()=>{
-        const result = await services.persistanceService.createMovie({
-            username: 'username',
-            password: 'pass',
-            name: 'name'
-        }, {
-            title: 'title',
-            actors:[],
-            description: 'description',
-            release_date: '2022-05-05',
-            visibility: VISIBILITY.PUBLIC,
-            id: '1234'
-        })
-        expect(result).toEqual({status:STATUS.SUCCESS});
-    })
-
-    test('Movie exists', async ()=>{
-        const user = {
-            username: 'username',
-            name: 'User'
-        }
-        const movieId = 'movieId'
-        const result = await services.persistanceService.movieExists(user, movieId)
-        expect(result).toEqual(true);
-    })
-
-    test('Delete Movie', async ()=>{
-        const result = await services.persistanceService.deleteMovie({
-            username: 'username',
-            password: 'pass',
-            name: 'name'
+    test('Update item', async ()=>{
+        const result = await services.persistanceService.updateItem({
+            PK: '1234',
+            SK: '1234'
         }, 'movieId')
         expect(result).toEqual({status:STATUS.SUCCESS});
     })

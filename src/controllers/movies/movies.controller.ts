@@ -43,7 +43,7 @@ export class MovieController implements interfaces.Controller {
         title: Joi.string().required().max(25),
         actors: Joi.array().items({
             name: Joi.string().required()
-        }).max(10)
+        }).max(10).required()
     })))
     public async createMovie(@request() req: ApiRequest, @response() res: express.Response, @next() nextf: express.NextFunction): Promise<any> {
         const result = await this.movieService.createMovie(req.user,{
@@ -53,6 +53,34 @@ export class MovieController implements interfaces.Controller {
             title: req.body.title,
             actors: req.body.actors
         });
+        return {
+            data: result
+        };
+    }
+
+    @httpPut("/", TYPE.JwtMiddleware, joiBodyValidator(Joi.object().keys({
+        movieId: Joi.string().required(),
+        data: Joi.object().keys({
+            release_date: Joi.string().optional().custom((value, helper)=>{
+                const date = moment(value, 'YYYY-MM-DD', true);
+                if(date.isValid()){
+                    return true;
+                }else{
+                    return helper.error('date.invalid');
+                }
+            }).messages({
+                'date.invalid': '"release_date" must be a valid date in YYYY-MM-DD format'
+            }),
+            visibility: Joi.string().optional().valid(VISIBILITY.PUBLIC, VISIBILITY.PRIVATE),
+            description: Joi.string().optional().max(200),
+            title: Joi.string().optional().max(25),
+            actors: Joi.array().items({
+                name: Joi.string().required()
+            }).max(10).optional()
+        }).required()
+    })))
+    public async updateMovie(@request() req: ApiRequest, @response() res: express.Response, @next() nextf: express.NextFunction): Promise<any> {
+        const result = await this.movieService.updateMovie(req.user,req.body.movieId,req.body.data);
         return {
             data: result
         };
