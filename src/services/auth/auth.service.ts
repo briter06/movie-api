@@ -7,6 +7,7 @@ import { UserNoExistsError } from "@errors/userNoExists.error";
 import { User } from "@models/User";
 import { Params } from "@schemas/Params";
 import { PersistanceService } from "@services/persistance/persistance.service";
+import { getHashPassword, validateHashPassword } from "@utils/hash.crypto";
 import { inject } from "inversify";
 import * as jwt from 'jsonwebtoken';
 
@@ -25,11 +26,11 @@ export class AuthService{
             SK: `USER#${username}`,
         });
         if(record){
-            if(record.password!==password){
-                throw new IncorrectLoginError('Incorrect login');
-            }else{
+            if(validateHashPassword(password,record.password)){
                 const token = this.createToken(username,params.jwtExpirationTime);
                 return token;
+            }else{
+                throw new IncorrectLoginError('Incorrect login');
             }
         }else{
             throw new UserNoExistsError('User does not exist');
@@ -48,7 +49,7 @@ export class AuthService{
                 PK: `USER#${user.username}`,
                 SK: `USER#${user.username}`
             },{
-                password: user.password,
+                password: getHashPassword(user.password!),
                 name: user.name
             });
             return result

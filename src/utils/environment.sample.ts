@@ -7,6 +7,7 @@ import { LoggerService } from "@services/logger/logger.service";
 import { MovieService } from "@services/movie/movie.service";
 import { PersistanceService } from "@services/persistance/persistance.service";
 import { RandomService } from "@services/random/random.service";
+import { getHashPassword } from "./hash.crypto";
 
 export interface SampleServices{
     environService: EnvironmentService
@@ -30,7 +31,7 @@ export const SAMPLE_ENVIRONMENT: EnvironmentVariables = {
 }
 
 export const SAMPLE_PARAMS: Params = {
-    jwtExpirationTime: '30s'
+    jwtExpirationTime: '20m'
 }
 
 export const getSampleServices = ():SampleServices => {
@@ -40,7 +41,7 @@ export const getSampleServices = ():SampleServices => {
     const persistanceService: PersistanceService = new PersistanceService(environService);
     persistanceService.getByKey = jest.fn(async ()=>({
         PK: 'username',
-        password: 'password',
+        password: getHashPassword('password'),
         name: 'name'
     }));
     persistanceService.getParams = jest.fn(async ()=>SAMPLE_PARAMS);
