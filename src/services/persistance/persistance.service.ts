@@ -5,13 +5,14 @@ import { User } from "@models/User";
 import { Params } from "@schemas/Params";
 import { inject } from "inversify";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, ScanCommandInput } from "@aws-sdk/lib-dynamodb";
+import { DeleteCommand, DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, ScanCommandInput } from "@aws-sdk/lib-dynamodb";
 import { UserNoExistsError } from "@errors/userNoExists.error";
 import { IncorrectLoginError } from "@errors/incorrectLogin.error";
 import { InternalServerError } from "@errors/internalServer.error";
 import { EnvironmentVariables } from "@config/env/environmentVariables";
 import { Movie } from "@models/Movie";
 import { STATUS } from "@enums/status.enum";
+import { ItemNoExistsError } from "@errors/itemNoExists.error";
 
 @provide(TYPE.PersistanceService)
 export class PersistanceService{
@@ -119,9 +120,64 @@ export class PersistanceService{
         throw new InternalServerError('No parameters detected');
     }
 
+    public async createMovie(owner: User,movie: Movie){
+        if(movie.id){
+            const params = {
+                TableName: this.table,
+                Item:{
+                    PK: `USER#${owner.username}`,
+                    SK: `MOVIE#${movie.id}`,
+                    release_date: movie.release_date,
+                    visibility: movie.visibility,
+                    description: movie.description,
+                    title: movie.title,
+                    actors: movie.actors
+                }
+            };
+            await this.dynamo.send(new PutCommand(params));
+            return {
+                status: STATUS.SUCCESS
+            }
+        }
+        throw new InternalServerError('No id was provided');
+    }
+
+    public async deleteMovie(user:User,movieId: string){
+        const movieExists = await this.movieExists(user, movieId);
+        if(movieExists){
+            const params = {
+                TableName: this.table,
+                Key: {
+                    PK: `USER#${user.username}`,
+                    SK: `MOVIE#${movieId}`,
+                }
+            };
+            await this.dynamo.send(new DeleteCommand(params));
+            return {
+                status: STATUS.SUCCESS
+            }
+        };
+        throw new ItemNoExistsError('Movie id does not exist');
+    }
+
+    public async movieExists(user: User, movieId: string){
+        const params = {
+            TableName: this.table,
+            Key: {
+                PK: `USER#${user.username}`,
+                SK: `MOVIE#${movieId}`,
+            }
+        };
+        const data = await this.dynamo.send(new GetCommand(params));
+        if(data.Item){
+            return true;
+        }
+        return false;
+    }
+
     public async getMovies(ownerId?:string): Promise<Movie[]>{
         const params: ScanCommandInput = {
-            ProjectionExpression: "release_date, SK, description, title, visibility",
+            ProjectionExpression: "release_date, SK, description, title, visibility, actors",
             TableName: this.table
         }
         if(ownerId){
@@ -148,7 +204,14 @@ export class PersistanceService{
         const moviesResult = await this.dynamo.send(new ScanCommand(params));
         let movies: Movie[] = [];
         if(moviesResult.Items){
-            movies = moviesResult.Items as Movie[];
+            movies = moviesResult.Items.map(i=>({
+                id: i.SK.split('#')[1],
+                release_date: i.release_date,
+                visibility: i.visibility,
+                description: i.description,
+                title: i.title,
+                actors: i.actors
+            }));
         }
         return movies;
     }

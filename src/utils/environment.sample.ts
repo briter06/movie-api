@@ -40,6 +40,9 @@ export const getSampleServices = ():SampleServices => {
     persistanceService.getMovies = jest.fn(async ()=>([]));
     persistanceService.userExists = jest.fn(async ()=>false);
     persistanceService.createUser = jest.fn(async ()=>({status:STATUS.SUCCESS}));
+    persistanceService.createMovie = jest.fn(async ()=>({status:STATUS.SUCCESS}));
+    persistanceService.deleteMovie = jest.fn(async ()=>({status:STATUS.SUCCESS}));
+    persistanceService.movieExists = jest.fn(async ()=>true);
     const authService: AuthService = new AuthService(environService, persistanceService);
     const movieService: MovieService = new MovieService(persistanceService);
 
