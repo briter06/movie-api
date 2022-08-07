@@ -149,9 +149,9 @@ export class PersistanceService{
     }
 
     public async scanRecords(fieldsToReturn: string[], scanParams: ScanParams, pagination?: {limit?: number, startKey?: DynamoKeys}): Promise<{result:any[], lastEvaluatedKey: DynamoKeys | undefined}> {
-        const { filterExpression, expressionAttributesNames, expressionAttributesValues } = this.getScanExpressionFields(scanParams);
+        const { filterExpression, expressionAttributesNames, expressionAttributesValues } = this.getScanExpressionFields(fieldsToReturn, scanParams);
         const params: ScanCommandInput = {
-            ProjectionExpression: fieldsToReturn.join(', '),
+            ProjectionExpression: fieldsToReturn.map(f=>`#${f}`).join(', '),
             TableName: this.table,
             FilterExpression: filterExpression,
             ExpressionAttributeNames: expressionAttributesNames,
@@ -178,7 +178,7 @@ export class PersistanceService{
         return { result, lastEvaluatedKey };
     }
 
-    private getScanExpressionFields(scanParams: ScanParams){
+    private getScanExpressionFields(fieldsToReturn: string[], scanParams: ScanParams){
         const keys = Object.keys(scanParams);
         const filterExpression = keys.map((k)=>{
             switch(scanParams[k].operator){
@@ -191,6 +191,9 @@ export class PersistanceService{
         }).join(' and ');
         const expressionAttributesValues: any = {};
         const expressionAttributesNames: any = {};
+        fieldsToReturn.forEach((f)=>{
+            expressionAttributesNames[`#${f}`] = `${f}`;
+        })
         keys.forEach((k)=>{
             expressionAttributesNames[`#${k}`] = `${k}`;
             expressionAttributesValues[`:${k}`] = scanParams[k].value;
