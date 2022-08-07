@@ -24,7 +24,7 @@ describe("Persistance tests", () => {
 
     test('Scan records', async ()=>{
         const result = await services.persistanceService.scanRecords([],{})
-        expect(result).toEqual([]);
+        expect(result.result).toEqual([]);
     })
 
     test('Create item', async ()=>{

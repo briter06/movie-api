@@ -4,6 +4,7 @@ import { ScanOperators } from "@enums/scanOperators.enum";
 import { VISIBILITY } from "@enums/visibility.enum";
 import { ForbiddenItemError } from "@errors/forbiddenItem.error";
 import { ItemNoExistsError } from "@errors/itemNoExists.error";
+import { DynamoKeys } from "@models/DynamoKeys";
 import { Movie, UPDATABLE_MOVIE_FIELDS } from "@models/Movie";
 import { User } from "@models/User";
 import { ScanParams } from "@schemas/ScanParams";
@@ -11,15 +12,18 @@ import { PersistanceService } from "@services/persistance/persistance.service";
 import { createHash } from "@utils/hash.crypto";
 import { inject } from "inversify";
 import moment from "moment";
+import * as jwt from 'jsonwebtoken';
+import { EnvironmentService } from "@config/env/environment.service";
 
 @provide(TYPE.MovieService)
 export class MovieService{
 
     constructor(
+        @inject(TYPE.EnvironmentService) private environService: EnvironmentService,
         @inject(TYPE.PersistanceService) private persistanceService: PersistanceService
     ){}
 
-    public async getMovies(ownerId?: string): Promise<Movie[]> {
+    public async getMovies(pagination: {limit?: number, startKey?: string}, ownerId?: string): Promise<{movies: Movie[], lastEvaluatedKey: string | undefined}> {
         const scanParams: ScanParams = ownerId ?
         {
             SK: {
@@ -42,8 +46,23 @@ export class MovieService{
             }
         }
         const fieldsToReturn = ['release_date', 'SK', 'description', 'title', 'visibility', 'actors'];
-        const records = await this.persistanceService.scanRecords(fieldsToReturn, scanParams);
-        const movies: Movie[] = records.map((r:any)=>({
+        const pagin: any = {};
+        if(pagination?.limit){
+            pagin.limit = pagination.limit
+        }
+        if(pagination?.startKey && pagination?.startKey!=='NA'){
+            const keys: any = jwt.verify(pagination.startKey, this.environService.getVariables().paginationSecret);
+            pagin.startKey = {
+                PK: keys.PK,
+                SK: keys.SK
+            }
+        }
+        const records = await this.persistanceService.scanRecords(fieldsToReturn, scanParams, pagin);
+        let lastEvaluatedKey;
+        if(records.lastEvaluatedKey){
+            lastEvaluatedKey = jwt.sign(records.lastEvaluatedKey, this.environService.getVariables().paginationSecret);
+        }
+        const movies: Movie[] = records.result.map((r:any)=>({
             id: r.SK.split('#')[1],
             release_date: r.release_date,
             visibility: r.visibility,
@@ -51,7 +70,7 @@ export class MovieService{
             title: r.title,
             actors: r.actors
         }));
-        return movies
+        return { movies, lastEvaluatedKey }
     }
 
     public async createMovie(user:User,movie: Movie){
@@ -84,7 +103,7 @@ export class MovieService{
                 value: `MOVIE#${movieId}`
             }
         });
-        if(movieRecords.length>0){
+        if(movieRecords.result.length>0){
             try{
                 const result = await this.persistanceService.updateItem({
                     PK: `USER#${user.username}`,
@@ -105,7 +124,7 @@ export class MovieService{
                 value: `MOVIE#${movieId}`
             }
         });
-        if(movieRecords.length>0){
+        if(movieRecords.result.length>0){
             try{
                 const result = await this.persistanceService.deleteItem({
                     PK: `USER#${user.username}`,

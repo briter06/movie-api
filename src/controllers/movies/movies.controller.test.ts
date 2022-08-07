@@ -24,7 +24,7 @@ describe('Movies Controller', ()=>{
         });
         const response = createResponse();
         const result = await movieController.getMovies(request, response, ()=>{});
-        expect(result).toEqual({data:[]});
+        expect(result).toEqual({data:{movies:[]}});
     })
 
     test('Create movie', async ()=>{
@@ -55,7 +55,10 @@ describe('Movies Controller', ()=>{
             }
         });
         const response = createResponse();
-        services.persistanceService.scanRecords = jest.fn(async ()=>([{data:true}]));
+        services.persistanceService.scanRecords = jest.fn(async ()=>({
+            result: [{data:true}],
+            lastEvaluatedKey: undefined
+        }));
         const result = await movieController.deleteMovie(request, response, ()=>{});
         expect(result).toEqual({data:{status: STATUS.SUCCESS}});
     })
@@ -71,7 +74,10 @@ describe('Movies Controller', ()=>{
             }
         });
         const response = createResponse();
-        services.persistanceService.scanRecords = jest.fn(async ()=>([{data:true}]));
+        services.persistanceService.scanRecords = jest.fn(async ()=>({
+            result: [{data:true}],
+            lastEvaluatedKey: undefined
+        }));
         const result = await movieController.updateMovie(request, response, ()=>{});
         expect(result).toEqual({data:{status: STATUS.SUCCESS}});
     })

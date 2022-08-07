@@ -16,6 +16,7 @@ export class EnvironmentService{
             awsSecretAccessKey: validationResult.value.AWS_SECRET_ACCESS_KEY,
             jwtSecret: validationResult.value.JWT_SECRET,
             loggerlevel: validationResult.value.LOGGER_LEVEL,
+            paginationSecret: validationResult.value.PAGINATION_SECRET,
             port: validationResult.value.PORT,
             rootPath: validationResult.value.ROOT_PATH
         };

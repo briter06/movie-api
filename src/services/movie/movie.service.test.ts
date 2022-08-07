@@ -11,6 +11,11 @@ describe("MovieService tests", () => {
     })
 
     test('Get Movies test', async () => {
+        const result = await services.movieService.getMovies({});
+        expect(result.movies).toEqual([]);
+    })
+
+    test('Create Movies test', async () => {
         const result = await services.movieService.createMovie({
             username: 'username',
             password: 'pass',
@@ -27,7 +32,10 @@ describe("MovieService tests", () => {
     })
 
     test('Delete Movie test', async () => {
-        services.persistanceService.scanRecords = jest.fn(async ()=>([{data:true}]));
+        services.persistanceService.scanRecords = jest.fn(async ()=>({
+            result: [{data:true}],
+            lastEvaluatedKey: undefined
+        }));
         const result = await services.movieService.deleteMovie({
             username: 'username',
             password: 'pass',
@@ -37,7 +45,10 @@ describe("MovieService tests", () => {
     })
 
     test('Update Movie test', async () => {
-        services.persistanceService.scanRecords = jest.fn(async ()=>([{data:true}]));
+        services.persistanceService.scanRecords = jest.fn(async ()=>({
+            result: [{data:true}],
+            lastEvaluatedKey: undefined
+        }));
         const result = await services.movieService.updateMovie({
             username: 'username',
             password: 'pass',

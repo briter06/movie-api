@@ -7,6 +7,7 @@ export interface EnvironmentVariables{
     awsSecretAccessKey: string
     jwtSecret: string
     loggerlevel: string
+    paginationSecret: string
     port: string
     rootPath: string
 }
@@ -18,6 +19,7 @@ export const environmentSchema = Joi.object().keys({
     AWS_SECRET_ACCESS_KEY: Joi.string().required(),
     JWT_SECRET: Joi.string().required(),
     LOGGER_LEVEL: Joi.string().required(),
+    PAGINATION_SECRET: Joi.string().required(),
     PORT: Joi.string().required(),
     ROOT_PATH: Joi.string().required()
 }).unknown()

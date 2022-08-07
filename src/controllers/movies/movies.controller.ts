@@ -18,13 +18,37 @@ export class MovieController implements interfaces.Controller {
     ) {}
 
     @httpGet("/", TYPE.JwtMiddleware, joiQueryValidator(Joi.object().keys({
-        owned: Joi.string().optional().valid('true','false')
+        owned: Joi.string().optional().valid('true','false'),
+        limit: Joi.string().optional().custom((value, helper)=>{
+            const num = Number(value);
+            if(!isNaN(num) && num%1===0){
+                return true;
+            }else{
+                return helper.error('api.number.int')
+            }
+        }).messages({
+            'api.number.int': '"limit" must be an integer number'
+        }),
+        pageId: Joi.string().optional()
     })))
     public async getMovies(@request() req: ApiRequest, @response() res: express.Response, @next() nextf: express.NextFunction): Promise<any> {
-        const result: Movie[] = req.query.owned === 'true' ? await this.movieService.getMovies(req.user.username) : await this.movieService.getMovies();
-        return {
-            data: result
-        };
+        const pagination: any = {}
+        if(req.query.limit){
+            pagination.limit = Number(req.query.limit);
+        }
+        if(req.query.pageId){
+            pagination.startKey = req.query.pageId;
+        }
+        const result = req.query.owned === 'true' ? await this.movieService.getMovies(pagination,req.user.username) : await this.movieService.getMovies(pagination);
+        const resp: any = {
+            data: {
+                movies: result.movies
+            }
+        }
+        if(result.lastEvaluatedKey){
+            resp.data.nextPageId = result.lastEvaluatedKey;
+        }
+        return resp;
     }
 
     @httpPost("/", TYPE.JwtMiddleware, joiBodyValidator(Joi.object().keys({

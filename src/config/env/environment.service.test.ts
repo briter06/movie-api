@@ -19,6 +19,7 @@ describe('Environment variables', ()=>{
             AWS_DEFAULT_REGION: '1234',
             AWS_DYNAMO_TABLE_NAME: 'name',
             AWS_SECRET_ACCESS_KEY: '1234',
+            PAGINATION_SECRET: '1234',
             PORT: "3000",
             ROOT_PATH: "/api",
             JWT_SECRET: "123456",

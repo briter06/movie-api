@@ -148,7 +148,7 @@ export class PersistanceService{
         return null;
     }
 
-    public async scanRecords(fieldsToReturn: string[], scanParams: ScanParams){
+    public async scanRecords(fieldsToReturn: string[], scanParams: ScanParams, pagination?: {limit?: number, startKey?: DynamoKeys}): Promise<{result:any[], lastEvaluatedKey: DynamoKeys | undefined}> {
         const { filterExpression, expressionAttributesNames, expressionAttributesValues } = this.getScanExpressionFields(scanParams);
         const params: ScanCommandInput = {
             ProjectionExpression: fieldsToReturn.join(', '),
@@ -157,12 +157,25 @@ export class PersistanceService{
             ExpressionAttributeNames: expressionAttributesNames,
             ExpressionAttributeValues: expressionAttributesValues
         }
-        const result = await this.dynamo.send(new ScanCommand(params));
-        let arrayResult: any = [];
-        if(result.Items){
-            arrayResult = result.Items;
+        if(pagination?.limit){
+            params.Limit = pagination?.limit;
         }
-        return arrayResult;
+        if(pagination?.startKey){
+            params.ExclusiveStartKey = pagination?.startKey;
+        }
+        const dynamoResult = await this.dynamo.send(new ScanCommand(params));
+        let result: any = [];
+        let lastEvaluatedKey;
+        if(dynamoResult.Items){
+            result = dynamoResult.Items;
+            if(dynamoResult.LastEvaluatedKey){
+                lastEvaluatedKey = {
+                    PK: dynamoResult.LastEvaluatedKey.PK,
+                    SK: dynamoResult.LastEvaluatedKey.SK
+                }
+            }
+        }
+        return { result, lastEvaluatedKey };
     }
 
     private getScanExpressionFields(scanParams: ScanParams){

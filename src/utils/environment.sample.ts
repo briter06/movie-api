@@ -18,6 +18,7 @@ export const SAMPLE_ENVIRONMENT: EnvironmentVariables = {
     awsDefaultRegion: '1234',
     awsDynamoTableName: 'name',
     awsSecretAccessKey: '1234',
+    paginationSecret: '1234',
     port: '3000',
     loggerlevel: 'OFF',
     jwtSecret: '123456',
@@ -38,12 +39,15 @@ export const getSampleServices = ():SampleServices => {
         name: 'name'
     }));
     persistanceService.getParams = jest.fn(async ()=>SAMPLE_PARAMS);
-    persistanceService.scanRecords = jest.fn(async ()=>([]));
+    persistanceService.scanRecords = jest.fn(async ()=>({
+        result: [],
+        lastEvaluatedKey: undefined
+    }));
     persistanceService.createItem = jest.fn(async ()=>({status:STATUS.SUCCESS}));
     persistanceService.deleteItem = jest.fn(async ()=>({status:STATUS.SUCCESS}));
     persistanceService.updateItem = jest.fn(async ()=>({status:STATUS.SUCCESS}));
     const authService: AuthService = new AuthService(environService, persistanceService);
-    const movieService: MovieService = new MovieService(persistanceService);
+    const movieService: MovieService = new MovieService(environService,persistanceService);
 
     return {
         environService,
