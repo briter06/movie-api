@@ -46,7 +46,7 @@ export class MovieController implements interfaces.Controller {
         visibility: Joi.string().required().valid(VISIBILITY.PUBLIC, VISIBILITY.PRIVATE),
         description: Joi.string().required().max(200),
         title: Joi.string().required().max(25),
-        actors: Joi.array().items({
+        cast: Joi.array().items({
             name: Joi.string().required()
         }).max(10).required()
     })))
@@ -56,7 +56,7 @@ export class MovieController implements interfaces.Controller {
             visibility: req.body.visibility,
             description: req.body.description,
             title: req.body.title,
-            actors: req.body.actors
+            cast: req.body.cast
         });
         return {
             data: result
@@ -70,7 +70,7 @@ export class MovieController implements interfaces.Controller {
             visibility: Joi.string().optional().valid(VISIBILITY.PUBLIC, VISIBILITY.PRIVATE),
             description: Joi.string().optional().max(200),
             title: Joi.string().optional().max(25),
-            actors: Joi.array().items({
+            cast: Joi.array().items({
                 name: Joi.string().required()
             }).max(10).optional()
         }).required()

@@ -37,7 +37,7 @@ describe('Movies Controller', ()=>{
                 visibility: VISIBILITY.PUBLIC,
                 description: 'description',
                 title: 'title',
-                actors: []
+                cast: []
             }
         });
         const response = createResponse();

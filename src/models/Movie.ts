@@ -6,9 +6,9 @@ export interface Movie{
     release_date: string
     visibility: VISIBILITY
     description: string
-    actors: {
+    cast: {
         name: string
     }[]
 }
 
-export const UPDATABLE_MOVIE_FIELDS: (keyof Movie)[] = ["title", "release_date", "visibility", "description", "actors"];
+export const UPDATABLE_MOVIE_FIELDS: (keyof Movie)[] = ["title", "release_date", "visibility", "description", "cast"];

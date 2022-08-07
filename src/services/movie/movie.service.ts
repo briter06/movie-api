@@ -45,7 +45,7 @@ export class MovieService{
                 value: VISIBILITY.PUBLIC
             }
         }
-        const fieldsToReturn = ['release_date', 'SK', 'description', 'title', 'visibility', 'actors'];
+        const fieldsToReturn = ['release_date', 'SK', 'description', 'title', 'visibility', 'cast'];
         const pagin: any = {};
         if(pagination?.limit){
             pagin.limit = pagination.limit
@@ -68,7 +68,7 @@ export class MovieService{
             visibility: r.visibility,
             description: r.description,
             title: r.title,
-            actors: r.actors
+            cast: r.cast
         }));
         return { movies, lastEvaluatedKey }
     }
@@ -84,7 +84,7 @@ export class MovieService{
             visibility: movie.visibility,
             description: movie.description,
             title: movie.title,
-            actors: movie.actors
+            cast: movie.cast
         });
         return result
     }

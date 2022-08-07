@@ -22,7 +22,7 @@ describe("MovieService tests", () => {
             name: 'name'
         }, {
             title: 'title',
-            actors:[],
+            cast:[],
             description: 'description',
             release_date: '2022-05-05',
             visibility: VISIBILITY.PUBLIC,
