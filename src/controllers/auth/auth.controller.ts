@@ -5,7 +5,7 @@ import { TYPE } from "@config/ioc/types";
 import { AuthService } from "@services/auth/auth.service";
 import Joi from "joi";
 import { joiBodyValidator } from "@middlewares/joi/joi.middleware";
-import { InvalidEmailError } from "@errors/invalidEmail.error";
+import { joiEmail, joiPassword } from "@utils/joi.utils";
 
 @controller("/auth")
 export class AuthController implements interfaces.Controller {
@@ -16,8 +16,8 @@ export class AuthController implements interfaces.Controller {
 
     @httpPost("/login", joiBodyValidator(
         Joi.object().keys({
-            username: Joi.string().required().email({ tlds: { allow: false } }).label('email'),
-            password: Joi.string().required().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#?\]]).{10,}$/).label('password')
+            username: joiEmail().required(),
+            password: joiPassword().required()
         })
     ))
     public async login(@request() req: express.Request, @response() res: express.Response, @next() nextf: express.NextFunction): Promise<any> {
@@ -31,8 +31,8 @@ export class AuthController implements interfaces.Controller {
 
     @httpPost("/signup", joiBodyValidator(
         Joi.object().keys({
-            username: Joi.string().required().email({ tlds: { allow: false } }).label('email'),
-            password: Joi.string().required().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#?\]]).{10,}$/).label('password'),
+            username: joiEmail().required(),
+            password: joiPassword().required(),
             name: Joi.string().required()
         })
     ))

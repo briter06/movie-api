@@ -9,6 +9,7 @@ export interface EnvironmentVariables{
     loggerlevel: string
     paginationSecret: string
     port: string
+    randomApi: string
     rootPath: string
 }
 
@@ -21,5 +22,6 @@ export const environmentSchema = Joi.object().keys({
     LOGGER_LEVEL: Joi.string().required(),
     PAGINATION_SECRET: Joi.string().required(),
     PORT: Joi.string().required(),
+    RANDOM_API: Joi.string().required(),
     ROOT_PATH: Joi.string().required()
 }).unknown()

@@ -4,11 +4,10 @@ import { inject } from "inversify";
 import { TYPE } from "@config/ioc/types";
 import { MovieService } from "@services/movie/movie.service";
 import { ApiRequest } from "@schemas/ApiRequest";
-import { Movie } from "@models/Movie";
 import { joiBodyValidator, joiQueryValidator } from "@middlewares/joi/joi.middleware";
 import Joi from "joi";
-import moment from "moment";
 import { VISIBILITY } from "@enums/visibility.enum";
+import { joiDateFormat, joiStringInteger } from "@utils/joi.utils";
 
 @controller("/movies")
 export class MovieController implements interfaces.Controller {
@@ -19,16 +18,7 @@ export class MovieController implements interfaces.Controller {
 
     @httpGet("/", TYPE.JwtMiddleware, joiQueryValidator(Joi.object().keys({
         owned: Joi.string().optional().valid('true','false'),
-        limit: Joi.string().optional().custom((value, helper)=>{
-            const num = Number(value);
-            if(!isNaN(num) && num%1===0){
-                return true;
-            }else{
-                return helper.error('api.number.int')
-            }
-        }).messages({
-            'api.number.int': '"limit" must be an integer number'
-        }),
+        limit: joiStringInteger().optional(),
         pageId: Joi.string().optional()
     })))
     public async getMovies(@request() req: ApiRequest, @response() res: express.Response, @next() nextf: express.NextFunction): Promise<any> {
@@ -52,16 +42,7 @@ export class MovieController implements interfaces.Controller {
     }
 
     @httpPost("/", TYPE.JwtMiddleware, joiBodyValidator(Joi.object().keys({
-        release_date: Joi.string().required().custom((value, helper)=>{
-            const date = moment(value, 'YYYY-MM-DD', true);
-            if(date.isValid()){
-                return true;
-            }else{
-                return helper.error('date.invalid');
-            }
-        }).messages({
-            'date.invalid': '"release_date" must be a valid date in YYYY-MM-DD format'
-        }),
+        release_date: joiDateFormat('YYYY-MM-DD').required(),
         visibility: Joi.string().required().valid(VISIBILITY.PUBLIC, VISIBILITY.PRIVATE),
         description: Joi.string().required().max(200),
         title: Joi.string().required().max(25),
@@ -85,16 +66,7 @@ export class MovieController implements interfaces.Controller {
     @httpPut("/", TYPE.JwtMiddleware, joiBodyValidator(Joi.object().keys({
         movieId: Joi.string().required(),
         data: Joi.object().keys({
-            release_date: Joi.string().optional().custom((value, helper)=>{
-                const date = moment(value, 'YYYY-MM-DD', true);
-                if(date.isValid()){
-                    return true;
-                }else{
-                    return helper.error('date.invalid');
-                }
-            }).messages({
-                'date.invalid': '"release_date" must be a valid date in YYYY-MM-DD format'
-            }),
+            release_date: joiDateFormat('YYYY-MM-DD').optional(),
             visibility: Joi.string().optional().valid(VISIBILITY.PUBLIC, VISIBILITY.PRIVATE),
             description: Joi.string().optional().max(200),
             title: Joi.string().optional().max(25),

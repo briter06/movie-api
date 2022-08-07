@@ -18,6 +18,7 @@ export class EnvironmentService{
             loggerlevel: validationResult.value.LOGGER_LEVEL,
             paginationSecret: validationResult.value.PAGINATION_SECRET,
             port: validationResult.value.PORT,
+            randomApi: validationResult.value.RANDOM_API,
             rootPath: validationResult.value.ROOT_PATH
         };
         return {valid: true}

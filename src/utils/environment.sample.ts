@@ -3,14 +3,17 @@ import { EnvironmentVariables } from "@config/env/environmentVariables";
 import { STATUS } from "@enums/status.enum";
 import { Params } from "@schemas/Params";
 import { AuthService } from "@services/auth/auth.service";
+import { LoggerService } from "@services/logger/logger.service";
 import { MovieService } from "@services/movie/movie.service";
 import { PersistanceService } from "@services/persistance/persistance.service";
+import { RandomService } from "@services/random/random.service";
 
 export interface SampleServices{
     environService: EnvironmentService
     persistanceService: PersistanceService
     authService: AuthService
     movieService: MovieService
+    randomService: RandomService
 }
 
 export const SAMPLE_ENVIRONMENT: EnvironmentVariables = {
@@ -19,6 +22,7 @@ export const SAMPLE_ENVIRONMENT: EnvironmentVariables = {
     awsDynamoTableName: 'name',
     awsSecretAccessKey: '1234',
     paginationSecret: '1234',
+    randomApi: 'http://random/api',
     port: '3000',
     loggerlevel: 'OFF',
     jwtSecret: '123456',
@@ -32,6 +36,7 @@ export const SAMPLE_PARAMS: Params = {
 export const getSampleServices = ():SampleServices => {
     const environService: EnvironmentService = new EnvironmentService();
     environService.getVariables = jest.fn(()=>SAMPLE_ENVIRONMENT);
+    const loggerService: LoggerService = new LoggerService(environService);
     const persistanceService: PersistanceService = new PersistanceService(environService);
     persistanceService.getByKey = jest.fn(async ()=>({
         PK: 'username',
@@ -48,11 +53,14 @@ export const getSampleServices = ():SampleServices => {
     persistanceService.updateItem = jest.fn(async ()=>({status:STATUS.SUCCESS}));
     const authService: AuthService = new AuthService(environService, persistanceService);
     const movieService: MovieService = new MovieService(environService,persistanceService);
+    const randomService: RandomService = new RandomService(loggerService, environService);
+    randomService.getRandomNumber = jest.fn(async ()=>10);
 
     return {
         environService,
         persistanceService,
         authService,
-        movieService
+        movieService,
+        randomService
     }
 }

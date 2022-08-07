@@ -86,7 +86,6 @@ export class MovieService{
             title: movie.title,
             actors: movie.actors
         });
-        // const result = await this.persistanceService.createMovie(user,movie);
         return result
     }
 

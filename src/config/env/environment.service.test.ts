@@ -20,6 +20,7 @@ describe('Environment variables', ()=>{
             AWS_DYNAMO_TABLE_NAME: 'name',
             AWS_SECRET_ACCESS_KEY: '1234',
             PAGINATION_SECRET: '1234',
+            RANDOM_API: 'htpp://random/api',
             PORT: "3000",
             ROOT_PATH: "/api",
             JWT_SECRET: "123456",

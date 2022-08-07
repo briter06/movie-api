@@ -3,7 +3,8 @@ const SERVICES = {
     EnvironmentService: Symbol('EnvironmentService'),
     LoggerService: Symbol('LoggerService'),
     MovieService: Symbol('MovieService'),
-    PersistanceService: Symbol('PersistanceService')
+    PersistanceService: Symbol('PersistanceService'),
+    RandomService: Symbol('RandomService')
 }
 
 const MIDDLEWARES = {
