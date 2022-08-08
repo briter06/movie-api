@@ -36,6 +36,14 @@ PAGINATION_SECRET=<ANY_STRING>
 RANDOM_API=https://csrng.net/csrng/csrng.php
 ```
 
+### Test the project
+
+This is the command to run the unit tests:
+
+```bash
+npm test
+```
+
 ### Starting the project
 
 This is the command to run the project: 
