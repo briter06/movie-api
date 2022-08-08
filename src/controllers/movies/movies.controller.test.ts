@@ -42,7 +42,7 @@ describe('Movies Controller', ()=>{
         });
         const response = createResponse();
         const result = await movieController.createMovie(request, response, ()=>{});
-        expect(result).toEqual({data:{status: STATUS.SUCCESS}});
+        expect(result.data.status).toEqual(STATUS.SUCCESS);
     })
 
     test('Delete movie', async ()=>{

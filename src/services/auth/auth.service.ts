@@ -52,7 +52,9 @@ export class AuthService{
                 password: getHashPassword(user.password!),
                 name: user.name
             });
-            return result
+            return {
+                status: result.status
+            }
         }
     }
 

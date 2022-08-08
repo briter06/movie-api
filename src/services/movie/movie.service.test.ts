@@ -28,7 +28,7 @@ describe("MovieService tests", () => {
             visibility: VISIBILITY.PUBLIC,
             id: '1234'
         });
-        expect(result).toEqual({status:STATUS.SUCCESS});
+        expect(result.status).toEqual(STATUS.SUCCESS);
     })
 
     test('Delete Movie test', async () => {

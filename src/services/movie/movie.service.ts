@@ -86,7 +86,10 @@ export class MovieService{
             title: movie.title,
             cast: movie.cast
         });
-        return result
+        return {
+            status: result.status,
+            id: movie.id
+        }
     }
 
     public async updateMovie(user:User, movieId: string, movie: any){

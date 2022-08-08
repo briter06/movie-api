@@ -44,7 +44,7 @@ export class MovieController implements interfaces.Controller {
     @httpPost("/", TYPE.JwtMiddleware, joiBodyValidator(Joi.object().keys({
         release_date: joiDateFormat('YYYY-MM-DD').required(),
         visibility: Joi.string().required().valid(VISIBILITY.PUBLIC, VISIBILITY.PRIVATE),
-        description: Joi.string().required().max(500),
+        description: Joi.string().required().max(1000),
         title: Joi.string().required().max(100),
         cast: Joi.array().items({
             name: Joi.string().required()
@@ -68,7 +68,7 @@ export class MovieController implements interfaces.Controller {
         data: Joi.object().keys({
             release_date: joiDateFormat('YYYY-MM-DD').optional(),
             visibility: Joi.string().optional().valid(VISIBILITY.PUBLIC, VISIBILITY.PRIVATE),
-            description: Joi.string().optional().max(500),
+            description: Joi.string().optional().max(1000),
             title: Joi.string().optional().max(100),
             cast: Joi.array().items({
                 name: Joi.string().required()

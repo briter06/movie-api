@@ -58,3 +58,8 @@ This is the successful result:
 [2022-08-07T18:10:45.344] [INFO] default - AWS DynamoDB database started
 [2022-08-07T18:10:45.361] [INFO] default - HTTP Server listening in port 3000
 ```
+
+### Documentation
+
+**API Documentation:** [Movie API documentation](https://documenter.getpostman.com/view/22689703/VUjMokfV)
+
