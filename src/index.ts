@@ -42,6 +42,7 @@ server.setConfig((app) => {
     extended: true
   }));
   app.use(bodyParser.json());
+  app.get('/', (req,res)=>res.status(200).send({api: 'Movie API'}));
 });
 
 server.setErrorConfig((app) => {
